@@ -156,7 +156,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		s3ListDuration, prometheus.GaugeValue, listDuration, e.bucket, e.prefix, e.delimiter,
 	)
 
-    query := &s3.ListObjectVersionsInput{
+    querync := &s3.ListObjectVersionsInput{
 		Bucket:    aws.String(e.bucket),
 		Prefix:    aws.String(e.prefix),
 		Delimiter: aws.String(e.delimiter),
@@ -164,7 +164,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	startList := time.Now()
 	for {
-		resp, err := e.svc.ListObjectVersions(query)
+		resp, err := e.svc.ListObjectVersions(querync)
 		if err != nil {
 			log.Errorln(err)
 			ch <- prometheus.MustNewConstMetric(
@@ -179,7 +179,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		if resp.NextContinuationToken == nil {
 			break
 		}
-		query.ContinuationToken = resp.NextContinuationToken
+		querync.ContinuationToken = resp.NextContinuationToken
 	}
 	listNonCurrentDuration := time.Now().Sub(startList).Seconds()
 
