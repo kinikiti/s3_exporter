@@ -175,11 +175,14 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
 			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
+			if resp.NextVersionIdMarker == nil {
+			    break
+		    }
 		}
-		if resp.NextContinuationToken == nil {
+		if resp.NextKeyMarker == nil {
 			break
 		}
-		querync.ContinuationToken = resp.NextContinuationToken
+		querync.KeyMarker  = resp.NextKeyMarker
 	}
 	listNonCurrentDuration := time.Now().Sub(startNonCurrentList).Seconds()
 
