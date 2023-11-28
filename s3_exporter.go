@@ -173,7 +173,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			return
 		}
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
-		for _, item := range resp.Version {
+		for _, item := range resp.Versions {
 			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
 		}
 		if resp.NextContinuationToken == nil {
