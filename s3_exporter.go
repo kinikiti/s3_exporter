@@ -178,7 +178,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
-		    fmt.PrintLn(*item.Size)
+		    fmt.Println(*item.Size)
 			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
 			if resp.NextVersionIdMarker == nil {
 			    break
