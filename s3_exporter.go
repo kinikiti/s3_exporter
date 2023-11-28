@@ -150,7 +150,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		query.ContinuationToken = resp.NextContinuationToken
 	}
-	listDuration := time.Now().Sub(startList).Seconds()
+	listDuration := time.Now().Since(startList).Seconds()
 
 	ch <- prometheus.MustNewConstMetric(
 		s3ListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
@@ -177,6 +177,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
+		    fmt.PrintLn(*item.size)
 			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
 			if resp.NextVersionIdMarker == nil {
 			    break
@@ -187,7 +188,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		querync.KeyMarker  = resp.NextKeyMarker
 	}
-	listNonCurrentDuration := time.Now().Sub(startNonCurrentList).Seconds()
+	listNonCurrentDuration := time.Now().Since(startNonCurrentList).Seconds()
 
 	ch <- prometheus.MustNewConstMetric(
 		s3NonCurrentListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
