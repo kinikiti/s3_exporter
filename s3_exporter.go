@@ -28,9 +28,19 @@ var (
 		"If the ListObjects operation was a success",
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
+	s3NonCurrentListSuccess = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "noncurrent_list_success"),
+		"If the ListObjects operation for non current objects was a success",
+		[]string{"bucket", "prefix", "delimiter"}, nil,
+	)
 	s3ListDuration = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "list_duration_seconds"),
 		"The total duration of the list operation",
+		[]string{"bucket", "prefix", "delimiter"}, nil,
+	)
+	s3NonCurrentListDuration = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "list_duration_noncurrent_seconds"),
+		"The total duration of the list operation for all non current objects",
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
 	s3LastModifiedObjectDate = prometheus.NewDesc(
@@ -51,6 +61,11 @@ var (
 	s3SumSize = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "objects_size_sum_bytes"),
 		"The total size of all objects summed",
+		[]string{"bucket", "prefix"}, nil,
+	)
+	s3NonCurrentSumSize = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "noncurrent_objects_size_sum_bytes"),
+		"The total size of all objects including non-current summed",
 		[]string{"bucket", "prefix"}, nil,
 	)
 	s3BiggestSize = prometheus.NewDesc(
@@ -93,6 +108,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	var lastModified time.Time
 	var numberOfObjects float64
 	var totalSize int64
+	var totalSizeNonCurrent int64
 	var biggestObjectSize int64
 	var lastObjectSize int64
 	var commonPrefixes int
@@ -139,6 +155,41 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		s3ListDuration, prometheus.GaugeValue, listDuration, e.bucket, e.prefix, e.delimiter,
 	)
+
+    query := &s3.ListObjectVersionsInput{
+		Bucket:    aws.String(e.bucket),
+		Prefix:    aws.String(e.prefix),
+		Delimiter: aws.String(e.delimiter),
+	}
+
+	startList := time.Now()
+	for {
+		resp, err := e.svc.ListObjectVersions(query)
+		if err != nil {
+			log.Errorln(err)
+			ch <- prometheus.MustNewConstMetric(
+				s3NonCurrentListSuccess, prometheus.GaugeValue, 0, e.bucket, e.prefix,
+			)
+			return
+		}
+		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
+		for _, item := range resp.Contents {
+			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
+		}
+		if resp.NextContinuationToken == nil {
+			break
+		}
+		query.ContinuationToken = resp.NextContinuationToken
+	}
+	listNonCurrentDuration := time.Now().Sub(startList).Seconds()
+
+	h <- prometheus.MustNewConstMetric(
+		s3NonCurrentListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		s3NonCurrentListDuration, prometheus.GaugeValue, listNonCurrentDuration, e.bucket, e.prefix, e.delimiter,
+	)
+
 	if e.delimiter == "" {
 		ch <- prometheus.MustNewConstMetric(
 			s3LastModifiedObjectDate, prometheus.GaugeValue, float64(lastModified.UnixNano()/1e9), e.bucket, e.prefix,
@@ -154,6 +205,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		)
 		ch <- prometheus.MustNewConstMetric(
 			s3SumSize, prometheus.GaugeValue, float64(totalSize), e.bucket, e.prefix,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			s3NonCurrentSumSize, prometheus.GaugeValue, float64(totalSizeNonCurrent), e.bucket, e.prefix,
 		)
 	} else {
 		ch <- prometheus.MustNewConstMetric(
