@@ -186,7 +186,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 	listNonCurrentDuration := time.Now().Sub(startNonCurrentList).Seconds()
 
-	h <- prometheus.MustNewConstMetric(
+	ch <- prometheus.MustNewConstMetric(
 		s3NonCurrentListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
 	)
 	ch <- prometheus.MustNewConstMetric(
