@@ -168,7 +168,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	startNonCurrentList := time.Now()
 	for {
-		resp, err := e.svc.ListObjectVersions(querync)
+	    fmt.Println(querync)
+		resp, err := e.svc.ListObjectsV2(querync)
 		if err != nil {
 			log.Errorln(err)
 			ch <- prometheus.MustNewConstMetric(
@@ -178,7 +179,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
-		    fmt.Println(*item.Size)
 			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
 			if resp.NextVersionIdMarker == nil {
 			    break
