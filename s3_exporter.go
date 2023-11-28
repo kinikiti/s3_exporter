@@ -59,7 +59,7 @@ var (
 		[]string{"bucket", "prefix"}, nil,
 	)
 	s3ObjectNonCurrentTotal = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "objects"),
+		prometheus.BuildFQName(namespace, "", "objects_noncurrent"),
 		"The total number of objects non current for the bucket/prefix combination",
 		[]string{"bucket", "prefix"}, nil,
 	)
@@ -213,6 +213,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		)
 		ch <- prometheus.MustNewConstMetric(
 			s3ObjectTotal, prometheus.GaugeValue, numberOfObjects, e.bucket, e.prefix,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			s3ObjectNonCurrentTotal, prometheus.GaugeValue, numberOfNCObjects, e.bucket, e.prefix,
 		)
 		ch <- prometheus.MustNewConstMetric(
 			s3BiggestSize, prometheus.GaugeValue, float64(biggestObjectSize), e.bucket, e.prefix,
