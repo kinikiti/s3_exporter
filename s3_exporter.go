@@ -150,7 +150,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		query.ContinuationToken = resp.NextContinuationToken
 	}
-	listDuration := time.Now().Since(startList).Seconds()
+	listDuration := time.Since(startList).Seconds()
 
 	ch <- prometheus.MustNewConstMetric(
 		s3ListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
@@ -188,7 +188,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		querync.KeyMarker  = resp.NextKeyMarker
 	}
-	listNonCurrentDuration := time.Now().Since(startNonCurrentList).Seconds()
+	listNonCurrentDuration := time.Since(startNonCurrentList).Seconds()
 
 	ch <- prometheus.MustNewConstMetric(
 		s3NonCurrentListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
