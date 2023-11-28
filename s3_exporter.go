@@ -169,7 +169,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	startNonCurrentList := time.Now()
 	for {
 	    fmt.Println(querync)
-		resp, err := e.svc.ListObjectsV2(querync)
+		resp, err := e.svc.ListObjectVersions(querync)
 		if err != nil {
 			log.Errorln(err)
 			ch <- prometheus.MustNewConstMetric(
