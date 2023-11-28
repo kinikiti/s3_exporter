@@ -162,7 +162,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		Delimiter: aws.String(e.delimiter),
 	}
 
-	startList := time.Now()
+	startncList := time.Now()
 	for {
 		resp, err := e.svc.ListObjectVersions(querync)
 		if err != nil {
@@ -181,7 +181,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		querync.ContinuationToken = resp.NextContinuationToken
 	}
-	listNonCurrentDuration := time.Now().Sub(startList).Seconds()
+	listNonCurrentDuration := time.Now().Sub(startncList).Seconds()
 
 	h <- prometheus.MustNewConstMetric(
 		s3NonCurrentListSuccess, prometheus.GaugeValue, 1, e.bucket, e.prefix, e.delimiter,
