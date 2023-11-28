@@ -39,7 +39,7 @@ var (
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
 	s3NonCurrentListDuration = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "list_duration_noncurrent_seconds"),
+		prometheus.BuildFQName(namespace, "", "list_noncurrent_duration_seconds"),
 		"The total duration of the list operation for all non current objects",
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
@@ -59,7 +59,7 @@ var (
 		[]string{"bucket", "prefix"}, nil,
 	)
 	s3ObjectNonCurrentTotal = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "objects_noncurrent"),
+		prometheus.BuildFQName(namespace, "", "noncurrent_objects"),
 		"The total number of objects non current for the bucket/prefix combination",
 		[]string{"bucket", "prefix"}, nil,
 	)
@@ -180,7 +180,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(
 				s3NonCurrentListSuccess, prometheus.GaugeValue, 0, e.bucket, e.prefix,
 			)
-			return
+			break
 		}
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
