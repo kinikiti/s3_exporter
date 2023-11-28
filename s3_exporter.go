@@ -91,12 +91,15 @@ type Exporter struct {
 // Describe all the metrics we export
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- s3ListSuccess
+	ch <- s3NonCurrentListSuccess
 	ch <- s3ListDuration
+	ch <- s3NonCurrentListDuration
 	if e.delimiter == "" {
 		ch <- s3LastModifiedObjectDate
 		ch <- s3LastModifiedObjectSize
 		ch <- s3ObjectTotal
 		ch <- s3SumSize
+		ch <- s3NonCurrentSumSize
 		ch <- s3BiggestSize
 	} else {
 		ch <- s3CommonPrefixes
