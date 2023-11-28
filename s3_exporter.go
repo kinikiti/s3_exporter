@@ -58,6 +58,11 @@ var (
 		"The total number of objects for the bucket/prefix combination",
 		[]string{"bucket", "prefix"}, nil,
 	)
+	s3ObjectNonCurrentTotal = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "objects"),
+		"The total number of objects non current for the bucket/prefix combination",
+		[]string{"bucket", "prefix"}, nil,
+	)
 	s3SumSize = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "objects_size_sum_bytes"),
 		"The total size of all objects summed",
@@ -98,6 +103,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 		ch <- s3LastModifiedObjectDate
 		ch <- s3LastModifiedObjectSize
 		ch <- s3ObjectTotal
+		ch <- s3ObjectNonCurrentTotal
 		ch <- s3SumSize
 		ch <- s3NonCurrentSumSize
 		ch <- s3BiggestSize
@@ -110,6 +116,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	var lastModified time.Time
 	var numberOfObjects float64
+	var numberOfNCObjects float64
 	var totalSize int64
 	var totalSizeNonCurrent int64
 	var biggestObjectSize int64
@@ -177,6 +184,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
+		    numberOfNCObjects++
 			totalSizeNonCurrent = totalSizeNonCurrent + *item.Size
 			if resp.NextVersionIdMarker == nil {
 			    break
