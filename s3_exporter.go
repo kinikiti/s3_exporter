@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -168,7 +167,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	startNonCurrentList := time.Now()
 	for {
-	    fmt.Println(querync)
 		resp, err := e.svc.ListObjectVersions(querync)
 		if err != nil {
 			log.Errorln(err)
