@@ -44,6 +44,33 @@ var (
 				Prefix:      String("one"),
 			},
 		},
+		s3ExporterTestCase{
+			Name:   "one object",
+			Bucket: "mock",
+			Prefix: "one",
+			ExpectedOutputLines: []string{
+				"s3_list_success{bucket=\"mock\",delimiter=\"\",prefix=\"one\"} 1",
+				"s3_last_modified_object_date{bucket=\"mock\",prefix=\"one\"} 1.5604596e+09",
+				"s3_last_modified_object_size_bytes{bucket=\"mock\",prefix=\"one\"} 1234",
+				"s3_biggest_object_size_bytes{bucket=\"mock\",prefix=\"one\"} 1234",
+				"s3_objects_size_sum_bytes{bucket=\"mock\",prefix=\"one\"} 1234",
+				"s3_objects{bucket=\"mock\",prefix=\"one\"} 1",
+			},
+			ListObjectVersionsResponse: &s3.ListObjectVersionsOutput{
+				Contents: []*s3.Object{
+					&s3.Object{
+						Key:          String("one"),
+						LastModified: Time(time.Date(2019, time.June, 13, 21, 0, 0, 0, time.UTC)),
+						Size:         Int64(1234),
+					},
+				},
+				IsTruncated: Bool(false),
+				KeyCount:    Int64(1),
+				MaxKeys:     Int64(1000),
+				Name:        String("mock"),
+				Prefix:      String("one"),
+			},
+		},
 		// Test no matching objects in the bucket
 		s3ExporterTestCase{
 			Name:   "no objects",
