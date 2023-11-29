@@ -29,7 +29,7 @@ var (
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
 	s3NonCurrentListSuccess = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "noncurrent_list_success"),
+		prometheus.BuildFQName(namespace, "", "list_success_noncurrent"),
 		"If the ListObjects operation for non current objects was a success",
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
@@ -39,7 +39,7 @@ var (
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
 	s3NonCurrentListDuration = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "list_noncurrent_duration_seconds"),
+		prometheus.BuildFQName(namespace, "", "list_duration_seconds_noncurrent"),
 		"The total duration of the list operation for all non current objects",
 		[]string{"bucket", "prefix", "delimiter"}, nil,
 	)
@@ -59,7 +59,7 @@ var (
 		[]string{"bucket", "prefix"}, nil,
 	)
 	s3ObjectNonCurrentTotal = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "noncurrent_objects"),
+		prometheus.BuildFQName(namespace, "", "objects_noncurrent"),
 		"The total number of objects non current for the bucket/prefix combination",
 		[]string{"bucket", "prefix"}, nil,
 	)
@@ -69,7 +69,7 @@ var (
 		[]string{"bucket", "prefix"}, nil,
 	)
 	s3NonCurrentSumSize = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "noncurrent_objects_size_sum_bytes"),
+		prometheus.BuildFQName(namespace, "", "objects_size_sum_bytes_noncurrent"),
 		"The total size of all objects including non-current summed",
 		[]string{"bucket", "prefix"}, nil,
 	)
