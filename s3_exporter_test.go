@@ -196,6 +196,16 @@ func (m *mockS3Client) ListObjectsV2(input *s3.ListObjectsV2Input) (*s3.ListObje
 	return r, nil
 }
 
+// ListObjectVersions mocks out the corresponding function in the S3 client, returning the response that corresponds to the test case
+func (m *mockS3Client) ListObjectVersions(input *s3.ListObjectVersionsInput) (*s3.ListObjectVersionsOutput, error) {
+	r, err := testCases.response(*input.Bucket, *input.Prefix)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
 // Repeatable probe function
 func probe(bucket, prefix, delimiter string) (rr *httptest.ResponseRecorder, err error) {
 	uri := "/probe?bucket=" + bucket
