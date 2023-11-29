@@ -151,6 +151,15 @@ type s3ExporterTestCase struct {
 	ListObjectsV2Response *s3.ListObjectsV2Output
 }
 
+type s3ExporterVersionsTestCases struct {
+	Name                  string
+	Bucket                string
+	Prefix                string
+	Delimiter             string
+	ExpectedOutputLines   []string
+	ListObjectsV2Response *s3.ListObjectVersionsOutput
+}
+
 // testBody tests the body returned by the exporter against the expected output
 func (tc *s3ExporterTestCase) testBody(body string, t *testing.T) {
 	for _, l := range tc.ExpectedOutputLines {
@@ -162,6 +171,7 @@ func (tc *s3ExporterTestCase) testBody(body string, t *testing.T) {
 }
 
 type s3ExporterTestCases []s3ExporterTestCase
+type s3ExporterVersionsTestCases []s3ExporterVersionsTestCases
 
 // Returns the mocked response for a bucket+prefix combination
 func (tcs *s3ExporterTestCases) response(bucket, prefix string) (*s3.ListObjectsV2Output, error) {
