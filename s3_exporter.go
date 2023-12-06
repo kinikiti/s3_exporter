@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"log"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	kingpin "github.com/alecthomas/kingpin/v2"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -134,9 +134,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for {
 		resp, err := e.svc.ListObjectsV2(query)
 		if err != nil {
-			log.Errorln(err)
+			log.Println(err)
 			ch <- prometheus.MustNewConstMetric(
-				s3ListSuccess, prometheus.GaugeValue, 0, e.bucket, e.prefix,
+				s3ListSuccess, prometheus.GaugeValue, 0, e.bucket, e.prefix, e.delimiter,
 			)
 			return
 		}
@@ -174,14 +174,23 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	startNonCurrentList := time.Now()
 	for {
-		resp, err := e.svc.ListObjectVersions(querync)
+		var resp *s3.ListObjectVersionsOutput
+		var err error
+		for i := 1; i < 5; i++ {
+			resp, err = e.svc.ListObjectVersions(querync)
+			if err == nil {
+				break
+			}
+		}
+
 		if err != nil {
-			log.Errorln(err)
+			log.Println(err)
 			ch <- prometheus.MustNewConstMetric(
-				s3NonCurrentListSuccess, prometheus.GaugeValue, 0, e.bucket, e.prefix,
+				s3NonCurrentListSuccess, prometheus.GaugeValue, 0, e.bucket, e.prefix, e.delimiter,
 			)
 			break
 		}
+
 		commonPrefixes = commonPrefixes + len(resp.CommonPrefixes)
 		for _, item := range resp.Versions {
 		    numberOfNCObjects++
@@ -266,7 +275,7 @@ type discoveryTarget struct {
 func discoveryHandler(w http.ResponseWriter, r *http.Request, svc s3iface.S3API) {
 	result, err := svc.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		log.Errorln(err)
+		log.Println(err)
 		http.Error(w, "error listing buckets", http.StatusInternalServerError)
 		return
 	}
@@ -310,7 +319,7 @@ func main() {
 		forcePathStyle = app.Flag("s3.force-path-style", "Custom force path style").Bool()
 	)
 
-	log.AddFlags(app)
+	log.SetFlags(log.LstdFlags)
 	app.Version(version.Print(namespace + "_exporter"))
 	app.HelpFlag.Short('h')
 	kingpin.MustParse(app.Parse(os.Args[1:]))
@@ -320,7 +329,7 @@ func main() {
 
 	sess, err = session.NewSession()
 	if err != nil {
-		log.Errorln("Error creating sessions ", err)
+		log.Println("Error creating sessions ", err)
 	}
 
 	cfg := aws.NewConfig()
@@ -333,8 +342,8 @@ func main() {
 
 	svc := s3.New(sess, cfg)
 
-	log.Infoln("Starting "+namespace+"_exporter", version.Info())
-	log.Infoln("Build context", version.BuildContext())
+	log.Println("Starting "+namespace+"_exporter", version.Info())
+	log.Println("Build context", version.BuildContext())
 
 	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc(*probePath, func(w http.ResponseWriter, r *http.Request) {
@@ -355,6 +364,6 @@ func main() {
 						 </html>`))
 	})
 
-	log.Infoln("Listening on", *listenAddress)
+	log.Println("Listening on", *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }

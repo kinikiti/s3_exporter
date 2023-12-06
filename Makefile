@@ -36,11 +36,11 @@ vet:
 build:
 	@echo ">> building binary"
 	@CGO_ENABLED=0 go build -v \
-		-ldflags "-X github.com/prometheus/common/version.Version=$(APP_VERSION) \
-		-X github.com/prometheus/common/version.Revision=$(APP_REVISION) \
-		-X github.com/prometheus/common/version.Branch=$(APP_BRANCH) \
-		-X github.com/prometheus/common/version.BuildUser=$(APP_USER)@$(APP_HOST) \
-		-X github.com/prometheus/common/version.BuildDate=$(APP_BUILD_DATE)\
+		-ldflags "-X 'github.com/prometheus/common/version.Version=$(APP_VERSION)' \
+		-X 'github.com/prometheus/common/version.Revision=$(APP_REVISION)' \
+		-X 'github.com/prometheus/common/version.Branch=$(APP_BRANCH)' \
+		-X 'github.com/prometheus/common/version.BuildUser=$(APP_USER)@$(APP_HOST)' \
+		-X 'github.com/prometheus/common/version.BuildDate=$(APP_BUILD_DATE)'\
 		" \
 		-o $(BIN_NAME) .
 
